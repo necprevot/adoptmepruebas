@@ -51,19 +51,10 @@ router.post('/generateData', async (req, res) => {
         // Generar mascotas
         const mockPets = generateMockPets(parseInt(pets));
 
-        // Insertar usuarios en la base de datos
-        const usersInserted = [];
-        for (const user of mockUsers) {
-            const result = await usersService.create(user);
-            usersInserted.push(result);
-        }
-
-        // Insertar mascotas en la base de datos
-        const petsInserted = [];
-        for (const pet of mockPets) {
-            const result = await petsService.create(pet);
-            petsInserted.push(result);
-        }
+const [usersInserted, petsInserted] = await Promise.all([
+            usersService.insertMany(mockUsers),
+            petsService.insertMany(mockPets)
+        ]);
 
         res.send({ 
             status: 'success', 
