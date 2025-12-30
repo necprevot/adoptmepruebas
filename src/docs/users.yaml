@@ -1,0 +1,317 @@
+paths:
+  /api/users:
+    get:
+      tags:
+        - Users
+      summary: Obtener todos los usuarios
+      description: Retorna un listado de todos los usuarios registrados en el sistema
+      responses:
+        200:
+          description: Lista de usuarios obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+        500:
+          description: Error del servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+
+  /api/users/{uid}:
+    get:
+      tags:
+        - Users
+      summary: Obtener un usuario por ID
+      description: Retorna los detalles de un usuario específico
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: ID del usuario
+          example: 507f1f77bcf86cd799439011
+      responses:
+        200:
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    $ref: '#/components/schemas/User'
+        404:
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+                    example: User not found
+
+    put:
+      tags:
+        - Users
+      summary: Actualizar un usuario
+      description: Actualiza la información de un usuario existente
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: ID del usuario
+          example: 507f1f77bcf86cd799439011
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                  example: Juan
+                last_name:
+                  type: string
+                  example: Pérez García
+                email:
+                  type: string
+                  format: email
+                  example: juan.perez@example.com
+                role:
+                  type: string
+                  enum: [user, admin]
+                  example: user
+      responses:
+        200:
+          description: Usuario actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: User updated
+        404:
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+                    example: User not found
+
+    delete:
+      tags:
+        - Users
+      summary: Eliminar un usuario
+      description: Elimina un usuario del sistema
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: ID del usuario
+          example: 507f1f77bcf86cd799439011
+      responses:
+        200:
+          description: Usuario eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: User deleted
+        404:
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+                    example: User not found
+
+  /api/users/{uid}/documents:
+    post:
+      tags:
+        - Users
+      summary: Subir documentos de usuario
+      description: Permite subir uno o varios documentos asociados a un usuario
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: ID del usuario
+          example: 507f1f77bcf86cd799439011
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - documents
+              properties:
+                documents:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Archivos a subir (máximo 5, tipos permitidos pdf, doc, docx, txt)
+      responses:
+        200:
+          description: Documentos subidos exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Documents uploaded successfully
+                  payload:
+                    type: object
+                    properties:
+                      uploadedFiles:
+                        type: number
+                        example: 2
+                      documents:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: documento.pdf
+                            reference:
+                              type: string
+                              example: /documents/documents-1735123456789-987654321.pdf
+        400:
+          description: No se subieron archivos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+                    example: No files uploaded
+        404:
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+                    example: User not found
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        first_name:
+          type: string
+          example: Juan
+        last_name:
+          type: string
+          example: Pérez
+        email:
+          type: string
+          format: email
+          example: juan.perez@example.com
+        role:
+          type: string
+          enum: [user, admin]
+          example: user
+        pets:
+          type: array
+          items:
+            type: string
+          example: []
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: documento.pdf
+              reference:
+                type: string
+                example: /documents/documents-1735123456789.pdf
+          example: []
+        last_connection:
+          type: string
+          format: date-time
+          example: 2024-12-29T10:30:00.000Z
+        createdAt:
+          type: string
+          format: date-time
+          example: 2024-12-29T10:00:00.000Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2024-12-29T10:30:00.000Z

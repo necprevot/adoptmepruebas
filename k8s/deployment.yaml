@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adoptme-deployment
+  labels:
+    app: adoptme
+spec:
+  replicas: 3  # 3 instancias de tu app
+  selector:
+    matchLabels:
+      app: adoptme
+  template:
+    metadata:
+      labels:
+        app: adoptme
+    spec:
+      containers:
+      - name: adoptme
+        image: necprevot/adoptme:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MONGO_URL
+          valueFrom:
+            secretKeyRef:
+              name: adoptme-secrets
+              key: mongo-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: adoptme-secrets
+              key: jwt-secret
+        - name: PORT
+          value: "8080"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/users
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/users
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
