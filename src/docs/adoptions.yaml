@@ -1,0 +1,142 @@
+paths:
+  /api/adoptions:
+    get:
+      tags:
+        - Adoptions
+      summary: Obtener todas las adopciones
+      description: Retorna un listado de todas las adopciones registradas en el sistema
+      responses:
+        200:
+          description: Lista de adopciones obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Adoption'
+
+  /api/adoptions/{aid}:
+    get:
+      tags:
+        - Adoptions
+      summary: Obtener una adopción por ID
+      description: Retorna los detalles de una adopción específica
+      parameters:
+        - in: path
+          name: aid
+          required: true
+          schema:
+            type: string
+          description: ID de la adopción
+          example: 507f1f77bcf86cd799439011
+      responses:
+        200:
+          description: Adopción encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    $ref: '#/components/schemas/Adoption'
+        404:
+          description: Adopción no encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+                    example: Adoption not found
+
+  /api/adoptions/{uid}/{pid}:
+    post:
+      tags:
+        - Adoptions
+      summary: Crear una adopción
+      description: Registra la adopción de una mascota por un usuario
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: ID del usuario que adopta
+          example: 507f1f77bcf86cd799439012
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID de la mascota a adoptar
+          example: 507f1f77bcf86cd799439013
+      responses:
+        200:
+          description: Adopción realizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Pet adopted
+        400:
+          description: La mascota ya está adoptada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+                    example: Pet is already adopted
+        404:
+          description: Usuario o mascota no encontrados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+                    example: user Not found
+
+components:
+  schemas:
+    Adoption:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        owner:
+          type: string
+          description: ID del usuario dueño
+          example: 507f1f77bcf86cd799439012
+        pet:
+          type: string
+          description: ID de la mascota adoptada
+          example: 507f1f77bcf86cd799439013

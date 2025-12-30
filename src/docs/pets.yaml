@@ -1,0 +1,237 @@
+paths:
+  /api/pets:
+    get:
+      tags:
+        - Pets
+      summary: Obtener todas las mascotas
+      description: Retorna un listado de todas las mascotas registradas en el sistema
+      responses:
+        200:
+          description: Lista de mascotas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pet'
+
+    post:
+      tags:
+        - Pets
+      summary: Crear una nueva mascota
+      description: Registra una nueva mascota en el sistema
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - specie
+                - birthDate
+              properties:
+                name:
+                  type: string
+                  example: Max
+                specie:
+                  type: string
+                  enum: [dog, cat, bird, hamster, rabbit]
+                  example: dog
+                birthDate:
+                  type: string
+                  format: date
+                  example: 2020-01-15
+      responses:
+        200:
+          description: Mascota creada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    $ref: '#/components/schemas/Pet'
+        400:
+          description: Valores incompletos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+                    example: Incomplete values
+
+  /api/pets/withimage:
+    post:
+      tags:
+        - Pets
+      summary: Crear mascota con imagen
+      description: Registra una nueva mascota con una imagen adjunta
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - specie
+                - birthDate
+                - image
+              properties:
+                name:
+                  type: string
+                  example: Max
+                specie:
+                  type: string
+                  enum: [dog, cat, bird, hamster, rabbit]
+                  example: dog
+                birthDate:
+                  type: string
+                  format: date
+                  example: 2020-01-15
+                image:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: Mascota creada exitosamente con imagen
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  payload:
+                    $ref: '#/components/schemas/Pet'
+        400:
+          description: Valores incompletos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  error:
+                    type: string
+                    example: Incomplete values
+
+  /api/pets/{pid}:
+    put:
+      tags:
+        - Pets
+      summary: Actualizar una mascota
+      description: Actualiza la información de una mascota existente
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID de la mascota
+          example: 507f1f77bcf86cd799439011
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Max Updated
+                specie:
+                  type: string
+                  example: dog
+                adopted:
+                  type: boolean
+                  example: false
+      responses:
+        200:
+          description: Mascota actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: pet updated
+
+    delete:
+      tags:
+        - Pets
+      summary: Eliminar una mascota
+      description: Elimina una mascota del sistema
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID de la mascota
+          example: 507f1f77bcf86cd799439011
+      responses:
+        200:
+          description: Mascota eliminada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: pet deleted
+
+components:
+  schemas:
+    Pet:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          example: Max
+        specie:
+          type: string
+          enum: [dog, cat, bird, hamster, rabbit]
+          example: dog
+        birthDate:
+          type: string
+          format: date-time
+          example: 2020-01-15T00:00:00.000Z
+        adopted:
+          type: boolean
+          example: false
+        owner:
+          type: string
+          example: 507f1f77bcf86cd799439012
+        image:
+          type: string
+          example: /public/img/1234567890-pet.jpg
