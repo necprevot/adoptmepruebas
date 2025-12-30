@@ -11,7 +11,8 @@
     "test:users": "mocha test/users.test.js --timeout 10000 --exit",
     "test:pets": "mocha test/pets.test.js --timeout 10000 --exit",
     "test:setup": "mocha test/setup.test.js --timeout 10000 --exit",
-    "test:watch": "mocha test/**/*.test.js --timeout 10000 --watch"
+    "test:watch": "mocha test/**/*.test.js --timeout 10000 --watch",
+    "test:sessions": "mocha test/sessions.test.js --timeout 10000 --exit"
   },
   "keywords": [],
   "author": "",

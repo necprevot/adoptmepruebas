@@ -37,12 +37,13 @@ const createPetWithImage = async(req,res) =>{
         name,
         specie,
         birthDate,
-        image:`${__dirname}/../public/img/${file.filename}`
+        image:`/pets/${file.filename}` // Actualizado para usar la carpeta pets
     });
     console.log(pet);
     const result = await petsService.create(pet);
     res.send({status:"success",payload:result})
 }
+
 export default {
     getAllPets,
     createPet,

@@ -1,3 +1,9 @@
 node_modules
 .DS_Store
 .env
+public/img/*
+!public/img/.gitkeep
+public/pets/*
+!public/pets/.gitkeep
+public/documents/*
+!public/documents/.gitkeep

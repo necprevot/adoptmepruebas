@@ -25,7 +25,9 @@ const register = async (req, res) => {
             first_name,
             last_name,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            documents: [],
+            last_connection: new Date()
         }
         let result = await usersService.create(user);
         console.log(result);
@@ -36,22 +38,51 @@ const register = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).send({ status: "error", error: "Incomplete values" });
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).send({ status: "error", error: "Incomplete values" });
+        }
+        const user = await usersService.getUserByEmail(email);
+        if (!user) {
+            return res.status(404).send({ status: "error", error: "User doesn't exist" });
+        }
+        const isValidPassword = await passwordValidation(user, password);
+        if (!isValidPassword) {
+            return res.status(400).send({ status: "error", error: "Incorrect password" });
+        }
+
+        // Actualizar last_connection
+        await usersService.update(user._id, { last_connection: new Date() });
+
+        const userDto = UserDTO.getUserTokenFrom(user);
+        const token = jwt.sign(userDto, JWT_SECRET, { expiresIn: "1h" });
+        res.cookie(COOKIE_NAME, token, { maxAge: COOKIE_MAX_AGE })
+            .send({ status: "success", message: "Logged in" });
+    } catch (error) {
+        res.status(500).send({ status: "error", error: error.message });
     }
-    const user = await usersService.getUserByEmail(email);
-    if (!user) {
-        return res.status(404).send({ status: "error", error: "User doesn't exist" });
+}
+
+const logout = async (req, res) => {
+    try {
+        const cookie = req.cookies[COOKIE_NAME];
+        if (cookie) {
+            const user = jwt.verify(cookie, JWT_SECRET);
+            
+            // Buscar usuario por email y actualizar last_connection
+            const userInDb = await usersService.getUserByEmail(user.email);
+            if (userInDb) {
+                await usersService.update(userInDb._id, { last_connection: new Date() });
+            }
+        }
+
+        res.clearCookie(COOKIE_NAME);
+        return res.send({ status: "success", message: "Logged out" });
+    } catch (error) {
+        res.clearCookie(COOKIE_NAME);
+        return res.send({ status: "success", message: "Logged out" });
     }
-    const isValidPassword = await passwordValidation(user, password);
-    if (!isValidPassword) {
-        return res.status(400).send({ status: "error", error: "Incorrect password" });
-    }
-    const userDto = UserDTO.getUserTokenFrom(user);
-    const token = jwt.sign(userDto, JWT_SECRET, { expiresIn: "1h" });
-    res.cookie(COOKIE_NAME, token, { maxAge: COOKIE_MAX_AGE })
-        .send({ status: "success", message: "Logged in" });
 }
 
 const current = async (req, res) => {
@@ -80,6 +111,10 @@ const unprotectedLogin = async (req, res) => {
     if (!isValidPassword) {
         return res.status(400).send({ status: "error", error: "Incorrect password" });
     }
+
+    // Actualizar last_connection
+    await usersService.update(user._id, { last_connection: new Date() });
+
     const token = jwt.sign(user.toObject(), JWT_SECRET, { expiresIn: "1h" });
     res.cookie('unprotectedCookie', token, { maxAge: COOKIE_MAX_AGE })
         .send({ status: "success", message: "Unprotected Logged in" });
@@ -101,6 +136,7 @@ const unprotectedCurrent = async (req, res) => {
 export default {
     current,
     login,
+    logout,
     register,
     unprotectedLogin,
     unprotectedCurrent
